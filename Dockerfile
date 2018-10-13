@@ -1,34 +1,89 @@
 FROM rastasheep/ubuntu-sshd:18.04
 
 # Install dependencies
-RUN apt-get update               \
- && apt-get -y -q upgrade        \
- && apt-get -y -q install        \
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && dpkg --add-architecture i386 \
+ && apt update                   \
+ && apt -y -q upgrade            \
+ && apt -y -q install            \
     bc                           \
     binutils-arm-linux-gnueabihf \
+    bison                        \ 
     build-essential              \
-    ccache                       \
-    gcc-arm-linux-gnueabihf      \
-    gccgo-8-arm-linux-gnueabi  \
-    gcc-aarch64-linux-gnu        \
+    bzip2                        \ 
+    ccache                       \ 
+    curl                         \
+    flex                         \
+    gcc-multilib                 \
     git                          \
+    g++-multilib                 \ 
+    gnupg                        \
+    gperf                        \
+    imagemagick                  \
+    lib32ncurses5-dev            \
+    lib32z1                      \
+    lib32z1-dev                  \
+    lib32z-dev                   \
+    libbz2-1.0                   \
+    libbz2-1.0:i386              \
+    libbz2-dev                   \
+    libbz2-dev:i386              \
+    libc6-dev                    \
+    libc6-dev-i386               \
+    libghc-bzlib-dev             \
+    libgl1-mesa-dev              \
+    libncurses5-dev              \
     libncurses-dev               \
+    libsdl1.2-dev                \
     libssl-dev                   \
+    libx11-dev                   \
+    libx11-dev:i386              \
+    libxml2-utils                \
+    lzop                         \
+    mingw-w64                    \
+    openjdk-8-jdk                \
+    pngcrush schedtool           \
+    python                       \
+    python-markdown              \
+    readline-common              \
+    software-properties-common   \
+    squashfs-tools               \
+    tmux                         \
+    tofrodos                     \
     u-boot-tools                 \
-    wget                         \
+    unzip                        \
+    x11proto-core-dev            \
+    xsltproc                     \
     xz-utils                     \
- && apt-get clean
+    zip                          \
+    zlib1g-dev                   \
+# Install additional packages which are useful for building Android
+    android-tools-adb \
+    android-tools-fastboot \
+    bash-completion \
+    bsdmainutils \
+    file \
+    nano \
+    rsync \
+    screen \
+    tig \
+    vim \
+	wget
 
+RUN mkdir -p /usr/local/bin \
+    && curl -o /usr/local/bin/repo https://commondatastorage.googleapis.com/git-repo-downloads/repo \
+	&& chmod 755 /usr/local/bin/repo
 
-# Install DTC
-RUN wget http://ftp.fr.debian.org/debian/pool/main/d/device-tree-compiler/device-tree-compiler_1.4.0+dfsg-1_amd64.deb -O /tmp/dtc.deb \
- && dpkg -i /tmp/dtc.deb \
- && rm -f /tmp/dtc.deb
-
-# Fetch the kernel
-ENV KVER=stable              \
-    CCACHE_DIR=/ccache       \
-    SRC_DIR=/usr/src         \
-    DIST_DIR=/dist           \
-    WORK_DIR=/usr/src
+ENV CCACHE_DIR=/ccache       \
+	CCACHE_SIZE=50G 		 \
+	USE_CCACHE=1 			 \
+    CCACHE_COMPRESS=1 		 \
+    WORK_DIR=/usr/src        \
+    USER=${whoami}			 \
+    PATH=$PATH:/usr/local/bin/
+    
 WORKDIR ${WORK_DIR}
+
+VOLUME [${WORK_DIR}, ${CCACHE_DIR}]
+
+EXPOSE 22
